@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GestorFacturas IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e5e3dc;
+    --text: #1a1917;
+    --muted: #8a8780;
+    --accent: #1a1917;
+    --green: #2d6a4f;
+    --green-bg: #d8f3dc;
+    --amber: #7d5a00;
+    --amber-bg: #fff3cd;
+    --red: #9b1c1c;
+    --red-bg: #fde8e8;
+    --blue: #1e3a5f;
+    --blue-bg: #e8f0fb;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--text);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .header-badge {
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.red { color: var(--red); }
+
+  .toolbar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .toolbar select,
+  .toolbar input {
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .toolbar select:focus,
+  .toolbar input:focus {
+    border-color: var(--text);
+  }
+
+  .toolbar input { flex: 1; min-width: 160px; }
+
+  .facturas-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .list-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 10px 1.25rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .factura-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 14px 1.25rem;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.1s;
+    cursor: default;
+  }
+
+  .factura-row:last-child { border-bottom: none; }
+  .factura-row:hover { background: var(--bg); }
+
+  .proveedor-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .proveedor-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .proveedor-nombre {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .proveedor-id {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .cell-text {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .cell-importe {
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .badge.pagada { background: var(--green-bg); color: var(--green); }
+  .badge.pendiente { background: var(--amber-bg); color: var(--amber); }
+  .badge.vencida { background: var(--red-bg); color: var(--red); }
+
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .analyze-btn:hover { opacity: 0.85; }
+
+  .demo-tag {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 600px) {
+    .list-header { grid-template-columns: 2fr 1fr 1fr; }
+    .list-header .col-fecha { display: none; }
+    .factura-row { grid-template-columns: 2fr 1fr 1fr; }
+    .factura-row .cell-fecha { display: none; }
+    header { padding: 1rem; }
+    main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📋</div>
+    <div>
+      <div class="logo-text">GestorFacturas IA</div>
+      <div class="logo-sub">Gestión inteligente para tu restaurante</div>
+    </div>
+  </div>
+  <span class="header-badge">Demo</span>
+</header>
+
+<main>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total facturas</div>
+      <div class="stat-value" id="statTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Importe total</div>
+      <div class="stat-value" id="statImporte">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pagadas</div>
+      <div class="stat-value green" id="statPagadas">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pendientes</div>
+      <div class="stat-value amber" id="statPendientes">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Vencidas</div>
+      <div class="stat-value red" id="statVencidas">—</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select id="filtroMes" onchange="filtrar()">
+      <option value="">Todos los meses</option>
+      <option value="01">Enero</option>
+      <option value="02">Febrero</option>
+      <option value="03">Marzo</option>
+      <option value="04">Abril</option>
+      <option value="05">Mayo</option>
+      <option value="06">Junio</option>
+      <option value="07">Julio</option>
+      <option value="08">Agosto</option>
+      <option value="09">Septiembre</option>
+      <option value="10">Octubre</option>
+      <option value="11">Noviembre</option>
+      <option value="12">Diciembre</option>
+    </select>
+    <select id="filtroEstado" onchange="filtrar()">
+      <option value="">Todos los estados</option>
+      <option value="pagada">Pagadas</option>
+      <option value="pendiente">Pendientes</option>
+      <option value="vencida">Vencidas</option>
+    </select>
+    <input type="text" id="buscar" placeholder="Buscar proveedor..." oninput="filtrar()" />
+  </div>
+
+  <div class="facturas-list">
+    <div class="list-header">
+      <div>Proveedor</div>
+      <div class="col-fecha">Fecha</div>
+      <div>Importe</div>
+      <div>Estado</div>
+    </div>
+    <div id="lista"></div>
+  </div>
+
+  <div class="demo-tag">Demo — datos de ejemplo. Versión personalizada disponible para tu negocio.</div>
+</main>
+
+<script>
+const facturas = [
+  { id:"F-001", proveedor:"Mercado Central", mes:"01", fecha:"05/01/2025", importe:1240.50, estado:"pagada", categoria:"Alimentación", icono:"🥩" },
+  { id:"F-002", proveedor:"Bodega Martínez", mes:"01", fecha:"12/01/2025", importe:890.00, estado:"pagada", categoria:"Bebidas", icono:"🍷" },
+  { id:"F-003", proveedor:"Distribuciones López", mes:"02", fecha:"03/02/2025", importe:560.75, estado:"pagada", categoria:"Alimentación", icono:"🥩" },
+  { id:"F-004", proveedor:"Gas Natural", mes:"02", fecha:"15/02/2025", importe:320.00, estado:"pendiente", categoria:"Suministros", icono:"⚡" },
+  { id:"F-005", proveedor:"Frutas Hermanos Ruiz", mes:"03", fecha:"08/03/2025", importe:430.20, estado:"pagada", categoria:"Alimentación", icono:"🥩" },
+  { id:"F-006", proveedor:"Limpiezas Rápidas SL", mes:"03", fecha:"20/03/2025", importe:210.00, estado:"vencida", categoria:"Servicios", icono:"🧹" },
+  { id:"F-007", proveedor:"Mercado Central", mes:"04", fecha:"04/04/2025", importe:1380.00, estado:"pendiente", categoria:"Alimentación", icono:"🥩" },
+  { id:"F-008", proveedor:"Bodega Martínez", mes:"04", fecha:"18/04/2025", importe:950.00, estado:"pagada", categoria:"Bebidas", icono:"🍷" },
+  { id:"F-009", proveedor:"Iberdrola", mes:"04", fecha:"22/04/2025", importe:480.60, estado:"vencida", categoria:"Suministros", icono:"⚡" },
+  { id:"F-010", proveedor:"Frutas Hermanos Ruiz", mes:"05", fecha:"02/05/2025", importe:390.00, estado:"pendiente", categoria:"Alimentación", icono:"🥩" },
+];
+
+function filtrar() {
+  const mes = document.getElementById("filtroMes").value;
+  const estado = document.getElementById("filtroEstado").value;
+  const buscar = document.getElementById("buscar").value.toLowerCase();
+  const resultado = facturas.filter(f =>
+    (!mes || f.mes === mes) &&
+    (!estado || f.estado === estado) &&
+    (!buscar || f.proveedor.toLowerCase().includes(buscar))
+  );
+  renderizar(resultado);
+}
+
+function renderizar(lista) {
+  const el = document.getElementById("lista");
+  if (lista.length === 0) {
+    el.innerHTML = '<div class="empty-state">No se encontraron facturas con estos filtros.</div>';
+    actualizarStats([]);
+    return;
+  }
+  el.innerHTML = lista.map(f => `
+    <div class="factura-row">
+      <div class="proveedor-cell">
+        <div class="proveedor-icon">${f.icono}</div>
+        <div>
+          <div class="proveedor-nombre">${f.proveedor}</div>
+          <div class="proveedor-id">${f.id}</div>
+        </div>
+      </div>
+      <div class="cell-text cell-fecha">${f.fecha}</div>
+      <div class="cell-importe">${f.importe.toLocaleString("es-ES", {minimumFractionDigits:2})} €</div>
+      <div><span class="badge ${f.estado}">${f.estado}</span></div>
+    </div>
+  `).join("");
+  actualizarStats(lista);
+}
+
+function actualizarStats(lista) {
+  document.getElementById("statTotal").textContent = lista.length;
+  document.getElementById("statImporte").textContent = lista.reduce((s,f)=>s+f.importe,0).toLocaleString("es-ES",{minimumFractionDigits:2}) + " €";
+  document.getElementById("statPagadas").textContent = lista.filter(f=>f.estado==="pagada").length;
+  document.getElementById("statPendientes").textContent = lista.filter(f=>f.estado==="pendiente").length;
+  document.getElementById("statVencidas").textContent = lista.filter(f=>f.estado==="vencida").length;
+}
+
+filtrar();
+</script>
+</body>
+</html>
